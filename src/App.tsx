@@ -11,7 +11,9 @@ import {
   UtensilsCrossed,
   Clock,
   MapPin,
-  Phone
+  Phone,
+  Instagram,
+  Facebook
 } from 'lucide-react';
 import { MENU_DATA, CATEGORIES } from './data/menu';
 import { MenuItem, CartItem } from './types';
@@ -70,19 +72,22 @@ export default function App() {
     
     const restaurantPhone = '201000520345'; // Updated from flyer
     
-    const message = `*طلب جديد من مطعم حضرموت الدمشقي* 🍖
------------------------------------
-*بيانات العميل:*
-👤 الاسم: ${customerInfo.name}
-📱 الهاتف: ${customerInfo.phone}
-📍 العنوان: ${customerInfo.address}
+    const message = `🌟 *طلب جديد من مطعم حضرموت الدمشقي* 🌟
+━━━━━━━━━━━━━━━━━━━
+👤 *بيانات العميل:*
+• الاسم: ${customerInfo.name}
+• الهاتف: ${customerInfo.phone}
+• العنوان: ${customerInfo.address}
 
-*تفاصيل الطلب:*
-${cart.map(item => `• ${item.arabicName} ${item.selectedSize ? `(${sizeLabels[item.selectedSize]})` : ''} x${item.quantity} = ${item.finalPrice * item.quantity} ج.م`).join('\n')}
+🍱 *تفاصيل الطلب:*
+${cart.map(item => `📦 ${item.arabicName} ${item.selectedSize ? `«${sizeLabels[item.selectedSize]}»` : ''}
+   🔢 الكمية: ${item.quantity} 
+   💰 السعر: ${item.finalPrice * item.quantity} ج.م`).join('\n\n')}
 
-*الإجمالي:* ${cartTotal} ج.م
------------------------------------
-شكراً لاختياركم حضرموت الدمشقي!`;
+━━━━━━━━━━━━━━━━━━━
+💵 *الإجمالي النهائي:* ${cartTotal} ج.م
+━━━━━━━━━━━━━━━━━━━
+✨ شكراً لاختياركم حضرموت الدمشقي! ✨`;
 
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${restaurantPhone}?text=${encodedMessage}`;
@@ -322,14 +327,14 @@ ${cart.map(item => `• ${item.arabicName} ${item.selectedSize ? `(${sizeLabels[
                 <MapPin size={24} />
               </div>
               <h4 className="text-lg font-black arabic">العنوان</h4>
-              <p className="text-sm text-muted arabic">طنطا - شارع النادي - امام نادي طنطا الرياضي</p>
+              <p className="text-sm text-muted arabic">طنطا - شارع البحر - بجوار صيدناوي</p>
             </div>
             <div className="bento-card p-8 flex flex-col gap-4 text-right">
               <div className="w-12 h-12 bg-primary/10 text-primary-dark rounded-2xl flex items-center justify-center">
                 <Phone size={24} />
               </div>
               <h4 className="text-lg font-black arabic">اتصل بنا</h4>
-              <p className="text-sm text-muted arabic leading-loose">01000520345 <br/> 01000520346</p>
+              <p className="text-sm text-muted arabic leading-loose">٠١٠٠٠٥٢٠٣٤٥ <br/> ٠١٢٧١١٩٤٩٤٤</p>
             </div>
             <div className="bento-card p-8 flex flex-col gap-4 text-right">
               <div className="w-12 h-12 bg-ink/5 text-ink rounded-2xl flex items-center justify-center">
@@ -515,9 +520,25 @@ ${cart.map(item => `• ${item.arabicName} ${item.selectedSize ? `(${sizeLabels[
           <div className="text-right flex flex-col items-center md:items-start">
             <h3 className="text-lg font-black text-primary arabic">حضرموت الدمشقي</h3>
             <p className="text-muted text-[11px] arabic">جميع الحقوق محفوظة © ٢٠٢٤ مطعم حضرموت الدمشقي</p>
+            <a 
+              href="https://wa.me/201000520345" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary/40 text-[9px] font-bold arabic mt-1 hover:text-primary transition-colors flex items-center gap-1"
+            >
+              تصميم وتطوير عمر احمد ٠١٠٠٠٥٢٠٣٤٥
+            </a>
           </div>
           
           <div className="flex flex-col md:flex-row gap-8 text-[11px] font-bold text-muted uppercase tracking-widest arabic items-center">
+             <a href="https://www.facebook.com/hadrmotdemshky/" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors flex items-center gap-2">
+               <Facebook size={14} className="text-primary" />
+               حساب فيسبوك
+             </a>
+             <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors flex items-center gap-2">
+               <Instagram size={14} className="text-primary" />
+               حساب انستجرام
+             </a>
              <span className="hover:text-accent cursor-pointer transition-colors flex flex-col items-center md:items-start gap-1">
                <div className="flex items-center gap-2">
                 <MapPin size={14} className="text-primary" />
