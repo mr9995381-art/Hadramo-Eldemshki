@@ -1,37 +1,70 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,700;1,400&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Inter', 'Cairo', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
-  --color-primary: #8E1C1C;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: 'Cairo', sans-serif;
+  --font-serif: 'Cormorant Garamond', serif;
+
+  --color-primary: #8E1C1C;       /* Deep Yemenite Red */
   --color-primary-dark: #5A1111;
-  --color-accent: #D4AF37;
+  --color-accent: #D4AF37;        /* Golden Accent */
   --color-accent-dark: #B4942F;
-  --color-sand: #F9F7F2;
+  --color-sand: #FAF9F6;          /* Warm Cream Paper */
   --color-border: #E8E2D9;
-  --color-ink: #2D2D2D;
-  --color-muted: #7A7A7A;
+  --color-ink: #1C1C1C;           /* Crisp Black */
+  --color-muted: #8E8E8E;
 }
 
-body {
-  @apply bg-sand text-ink min-h-screen;
-  font-family: var(--font-sans);
+@layer base {
+  body {
+    @apply bg-sand text-ink antialiased selection:bg-primary/10 selection:text-primary;
+    font-family: var(--font-sans);
+  }
 }
 
-.arabic {
-  font-family: 'Cairo', sans-serif;
-}
+@layer utilities {
+  .arabic {
+    font-family: var(--font-arabic);
+  }
+  
+  .serif {
+    font-family: var(--font-serif);
+  }
 
-.bento-card {
-  @apply bg-white border border-border rounded-[24px] shadow-sm;
-}
+  .bento-card {
+    @apply bg-white border border-border rounded-[32px] transition-all duration-500;
+    box-shadow: 0 4px 32px -12px rgba(0, 0, 0, 0.05);
+  }
 
-.featured-gradient {
-  background: linear-gradient(135deg, #8E1C1C 0%, #5A1111 100%);
+  .bento-card:hover {
+    @apply border-primary/20 -translate-y-1.5;
+    box-shadow: 0 32px 64px -16px rgba(142, 28, 28, 0.12);
+  }
+
+  .glass {
+    @apply bg-white/90 backdrop-blur-md border-b border-border shadow-sm;
+  }
+
+  .heading-tight {
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+
+  .text-luxury {
+    @apply font-black tracking-tight;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+
+  .dots-pattern {
+    background-image: radial-gradient(var(--color-border) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -39,9 +72,9 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-primary/20 rounded-full;
+  @apply bg-primary/30 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-primary/40;
+  @apply bg-primary/60;
 }
