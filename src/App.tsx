@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   ShoppingCart, 
@@ -11,28 +11,56 @@ import {
   UtensilsCrossed,
   Clock,
   MapPin,
-  Phone
+  Phone,
+  Settings
 } from 'lucide-react';
-import { MENU_DATA, CATEGORIES } from './data/menu';
+import { MENU_DATA as STATIC_MENU, CATEGORIES } from './data/menu';
 import { MenuItem, CartItem } from './types';
+import { db } from './lib/firebase';
+import { collection, onSnapshot, query } from 'firebase/firestore';
+import Admin from './components/Admin';
 
 export default function App() {
-  const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].arabicName);
+  const [activeCategory, setActiveCategory] = useState(CATEGORIES[1].arabicName); // Default to first proper category
   const [searchQuery, setSearchQuery] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartStep, setCartStep] = useState<'items' | 'checkout'>('items');
   const [isOrderComplete, setIsOrderComplete] = useState(false);
   const [customerInfo, setCustomerInfo] = useState({ name: '', phone: '', address: '' });
+  const [menuData, setMenuData] = useState<MenuItem[]>(STATIC_MENU);
+  
+  // Simple "Router"
+  const [view, setView] = useState<'home' | 'admin'>('home');
+
+  useEffect(() => {
+    // Sync with Firestore
+    const q = query(collection(db, 'menu'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const liveItems = snapshot.docs.map(doc => doc.data() as MenuItem);
+      if (liveItems.length > 0) {
+        setMenuData(liveItems);
+      }
+    });
+
+    // Check for hash routing
+    if (window.location.hash === '#admin') setView('admin');
+    window.addEventListener('hashchange', () => {
+      if (window.location.hash === '#admin') setView('admin');
+      else setView('home');
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Filter items based on category and search
   const filteredItems = useMemo(() => {
-    return MENU_DATA.filter(item => {
+    return menuData.filter(item => {
       const matchesCategory = item.arabicCategory === activeCategory;
       const matchesSearch = item.arabicName.includes(searchQuery) || item.name.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, menuData]);
 
   const addToCart = (item: MenuItem, size?: 'quarter' | 'third' | 'half' | 'kilo') => {
     const finalPrice = size && item.prices ? item.prices[size]! : (item.price || 0);
@@ -103,6 +131,8 @@ ${cart.map(item => `• ${item.arabicName} ${item.selectedSize ? `(${sizeLabels[
     kilo: 'كيلو'
   };
 
+  if (view === 'admin') return <Admin />;
+
   return (
     <div className="min-h-screen rtl font-sans" dir="rtl">
       {/* Header */}
@@ -131,6 +161,12 @@ ${cart.map(item => `• ${item.arabicName} ${item.selectedSize ? `(${sizeLabels[
             </div>
 
             <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setView('admin')}
+                className="p-2 text-primary/40 hover:text-primary transition-colors"
+              >
+                <Settings size={18} />
+              </button>
               <button 
                 onClick={() => {
                   setCartStep('items');

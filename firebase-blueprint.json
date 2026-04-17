@@ -1,0 +1,49 @@
+{
+  "entities": {
+    "Menu": {
+      "title": "Menu Item",
+      "description": "A single menu item with its prices and metadata.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "arabicName": { "type": "string" },
+        "price": { "type": "number" },
+        "prices": {
+          "type": "object",
+          "properties": {
+            "quarter": { "type": "number" },
+            "third": { "type": "number" },
+            "half": { "type": "number" },
+            "kilo": { "type": "number" }
+          }
+        },
+        "arabicDescription": { "type": "string" },
+        "arabicCategory": { "type": "string" },
+        "category": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "arabicName", "arabicCategory", "category"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "An administrator allowed to modify the menu.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    }
+  },
+  "firestore": {
+    "/menu/{itemId}": {
+      "schema": "Menu",
+      "description": "The collection of menu items."
+    },
+    "/admins/{adminId}": {
+      "schema": "Admin",
+      "description": "The list of authorized administrators."
+    }
+  }
+}
