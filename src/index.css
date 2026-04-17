@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', 'Cairo', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  --color-primary: #8E1C1C;
+  --color-primary-dark: #5A1111;
+  --color-accent: #D4AF37;
+  --color-accent-dark: #B4942F;
+  --color-sand: #F9F7F2;
+  --color-border: #E8E2D9;
+  --color-ink: #2D2D2D;
+  --color-muted: #7A7A7A;
+}
+
+body {
+  @apply bg-sand text-ink min-h-screen;
+  font-family: var(--font-sans);
+}
+
+.arabic {
+  font-family: 'Cairo', sans-serif;
+}
+
+.bento-card {
+  @apply bg-white border border-border rounded-[24px] shadow-sm;
+}
+
+.featured-gradient {
+  background: linear-gradient(135deg, #8E1C1C 0%, #5A1111 100%);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/20 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary/40;
+}
