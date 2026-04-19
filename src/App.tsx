@@ -125,7 +125,7 @@ ${cart.map(item => `📦 ${item.arabicName} ${item.selectedSize ? `«${sizeLabel
               </div>
               <div className="text-right flex flex-col justify-center">
                 <h1 className="text-xl font-black text-ink arabic leading-none">حضرموت الدمشقي</h1>
-                <p className="text-[9px] text-primary font-bold uppercase tracking-[0.2em] arabic mt-0.5">HADRAMOUT AL DAMASHQI</p>
+                <p className="text-[10px] text-primary font-bold arabic mt-0.5">أصل المندي والمشوي</p>
               </div>
             </div>
 
@@ -189,8 +189,8 @@ ${cart.map(item => `📦 ${item.arabicName} ${item.selectedSize ? `«${sizeLabel
               transition={{ delay: 0.5, duration: 0.8 }}
               className="text-7xl md:text-9xl font-black text-ink heading-tight arabic"
             >
-              عراقة المندي <br />
-              <span className="text-primary-dark serif italic">وفن المشوي</span>
+              حضرموت الدمشقي <br />
+              <span className="text-primary-dark serif italic">أصل المندي والمشوي</span>
             </motion.h2>
           </div>
 
@@ -200,7 +200,7 @@ ${cart.map(item => `📦 ${item.arabicName} ${item.selectedSize ? `«${sizeLabel
             transition={{ delay: 0.7 }}
             className="max-w-2xl text-lg md:text-xl text-muted arabic font-medium leading-relaxed mx-auto italic opacity-80"
           >
-            "أشهى المأكولات اليمنية والشامية الأصيلة في قلب طنطا، حيث يلتقي التراث مع الإبداع في كل وجبة."
+            "حضرموت الدمشقي.. أصل المندي والمشوي"
           </motion.p>
 
           <motion.div 
@@ -518,7 +518,7 @@ ${cart.map(item => `📦 ${item.arabicName} ${item.selectedSize ? `«${sizeLabel
       <footer className="bg-white border-t border-border py-10 mt-20">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-right flex flex-col items-center md:items-start">
-            <h3 className="text-lg font-black text-primary arabic">حضرموت الدمشقي</h3>
+            <h3 className="text-lg font-black text-primary arabic">حضرموت الدمشقي - أصل المندي والمشوي</h3>
             <p className="text-muted text-[11px] arabic">جميع الحقوق محفوظة © ٢٠٢٤ مطعم حضرموت الدمشقي</p>
             <a 
               href="https://wa.me/201000520345" 
