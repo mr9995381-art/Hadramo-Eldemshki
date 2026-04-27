@@ -120,8 +120,20 @@ ${cart.map(item => `📦 ${item.arabicName} ${item.selectedSize ? `«${sizeLabel
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center text-white shadow-xl rotate-3">
-                <UtensilsCrossed size={20} />
+              <div className="relative w-12 h-12 flex items-center justify-center">
+                <img 
+                  src="/src/logo.png" 
+                  alt="Logo" 
+                  className="w-full h-full object-contain drop-shadow-md"
+                  onError={(e) => {
+                    // Fallback to icon if image fails to load
+                    e.currentTarget.style.display = 'none';
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) {
+                      parent.innerHTML = '<div class="w-10 h-10 bg-primary rounded-2xl flex items-center justify-center text-white shadow-xl rotate-3"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-utensils-crossed"><path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"></path><path d="M15 22v-4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4"></path><path d="M18 11l-3 3"></path><path d="M12 2v8"></path><path d="M7 2v5"></path><path d="m2 8 8 5"></path><path d="m20 22-5-5"></path><circle cx="6" cy="18" r="3"></circle></svg></div>';
+                    }
+                  }}
+                />
               </div>
               <div className="text-right flex flex-col justify-center">
                 <h1 className="text-xl font-black text-ink arabic leading-none">حضرموت الدمشقي</h1>
@@ -517,9 +529,17 @@ ${cart.map(item => `📦 ${item.arabicName} ${item.selectedSize ? `«${sizeLabel
       {/* Footer Bar - Bento style */}
       <footer className="bg-white border-t border-border py-10 mt-20">
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-right flex flex-col items-center md:items-start">
-            <h3 className="text-lg font-black text-primary arabic">حضرموت الدمشقي - أصل المندي والمشوي</h3>
-            <p className="text-muted text-[11px] arabic">جميع الحقوق محفوظة © ٢٠٢٤ مطعم حضرموت الدمشقي</p>
+          <div className="text-right flex flex-col items-center md:items-start gap-3">
+            <img 
+              src="/src/logo.png" 
+              alt="Logo" 
+              className="w-16 h-16 object-contain hidden md:block" 
+              onError={(e) => e.currentTarget.style.display = 'none'} 
+            />
+            <div>
+              <h3 className="text-lg font-black text-primary arabic">حضرموت الدمشقي - أصل المندي والمشوي</h3>
+              <p className="text-muted text-[11px] arabic">جميع الحقوق محفوظة © ٢٠٢٤ مطعم حضرموت الدمشقي</p>
+            </div>
             <a 
               href="https://wa.me/201000520345" 
               target="_blank" 
