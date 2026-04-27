@@ -122,7 +122,7 @@ ${cart.map(item => `📦 ${item.arabicName} ${item.selectedSize ? `«${sizeLabel
             <div className="flex items-center gap-3">
               <div className="relative w-12 h-12 flex items-center justify-center">
                 <img 
-                  src="/src/logo.png" 
+                  src="/src/logo.svg" 
                   alt="Logo" 
                   className="w-full h-full object-contain drop-shadow-md"
                   onError={(e) => {
@@ -531,7 +531,7 @@ ${cart.map(item => `📦 ${item.arabicName} ${item.selectedSize ? `«${sizeLabel
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-right flex flex-col items-center md:items-start gap-3">
             <img 
-              src="/src/logo.png" 
+              src="/src/logo.svg" 
               alt="Logo" 
               className="w-16 h-16 object-contain hidden md:block" 
               onError={(e) => e.currentTarget.style.display = 'none'} 
