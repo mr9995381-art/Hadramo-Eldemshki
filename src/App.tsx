@@ -22,7 +22,9 @@ import {
   PhoneCall,
   Smartphone,
   CheckCircle2,
-  Heart
+  Heart,
+  Check,
+  Download
 } from 'lucide-react';
 import { MENU_DATA, CATEGORIES } from './data/menu';
 import { MenuItem, CartItem } from './types';
@@ -52,10 +54,57 @@ export default function App() {
   const [installProgress, setInstallProgress] = useState(0);
   const [showAndroidHome, setShowAndroidHome] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
+  const [installModalTab, setInstallModalTab] = useState<'test' | 'real'>('test');
   const [activeNotification, setActiveNotification] = useState<string | null>(null);
+
+  // Real browser/device PWA installation capture states
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isAppInstalled, setIsAppInstalled] = useState(false);
 
   // Digital Clock state for simulated status bar
   const [currentTime, setCurrentTime] = useState('10:43');
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent browser's mini-infobar so we can show our gorgeous custom UI
+      e.preventDefault();
+      // Store the event so we can trigger it upon clicking
+      setDeferredPrompt(e);
+    };
+
+    const handleAppInstalled = () => {
+      setIsAppInstalled(true);
+      setDeferredPrompt(null);
+      setActiveNotification('💖 شكراً لثقتكم الغالية! تم تثبيت تطبيق حضرموت الدمشقي بنجاح كبرنامج أصلي بالكامل على جهازك 📱✨');
+      setTimeout(() => setActiveNotification(null), 7000);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as any);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    // Initial check if we are already inside the installed standalone PWA app!
+    if (window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone) {
+      setIsAppInstalled(true);
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as any);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const triggerRealInstall = async () => {
+    if (!deferredPrompt) return;
+    try {
+      // Trigger the official native browser install dialog
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`PWA install prompt option: ${outcome}`);
+      setDeferredPrompt(null);
+    } catch (err) {
+      console.error('Error triggering PWA install: ', err);
+    }
+  };
 
   useEffect(() => {
     const updateTime = () => {
@@ -100,7 +149,9 @@ export default function App() {
           clearInterval(interval);
           setAndroidInstallStatus('installed');
           setIsInstallModalOpen(false);
-          setActiveNotification('🎉 تم تثبيت تطبيق حضرموت الأندرويد بنجاح! تم استلام رمز الخصم 10% 🌟');
+          setUseSimulator(true); // Switch to simulator automatically to show success!
+          setShowAndroidHome(true); // Switch to the phone's home screen
+          setActiveNotification('🎉 تم تثبيت تطبيق حضرموت الأندرويد بنجاح! تم إضافة الأيقونة في شاشة هاتف المحاكي المجاورة 🌟');
           setTimeout(() => {
             setActiveNotification(null);
           }, 6000);
@@ -120,7 +171,9 @@ export default function App() {
           clearInterval(interval);
           setIosInstallStatus('installed');
           setIsInstallModalOpen(false);
-          setActiveNotification('🍏 تم تثبيت تطبيق حضرموت للآيفون بنجاح! كود خصم 10% نشط الآن 🎟️');
+          setUseSimulator(true); // Switch to simulator automatically to show success!
+          setShowAndroidHome(true); // Switch to the phone's home screen
+          setActiveNotification('🍏 تم تثبيت تطبيق حضرموت للآيفون بنجاح! تم إضافة الأيقونة في شاشة هاتف المحاكي المجاورة 🌟');
           setTimeout(() => {
             setActiveNotification(null);
           }, 6000);
@@ -330,54 +383,63 @@ ${cart.map(item => `📦 ${item.arabicName} ${item.selectedSize ? `«${sizeLabel
                 </div>
               </div>
 
-              {/* Device-Specific App Installer Access Banners */}
-              {(!useSimulator || deviceType === 'android') && androidInstallStatus !== 'installed' && (
-                <div className="bg-emerald-500/10 border border-emerald-500/25 rounded-3xl p-5 flex items-center justify-between text-right gap-4">
-                  <div className="flex-1 space-y-1">
-                    <h4 className="text-emerald-800 text-xs font-black arabic flex items-center gap-1.5 justify-end">
-                      تطبيق الأندرويد متوفر للتحميل المباشر 📲
-                    </h4>
-                    <p className="text-neutral-600 text-[10px] arabic leading-relaxed">
-                      ثبّت التطبيق الملكي (APK) الخصم الحصري 10% بانتظارك مع خدمة التوصيل الفائق!
-                    </p>
-                    <button 
-                      onClick={() => { setDeviceType('android'); setIsInstallModalOpen(true); }}
-                      className="mt-3 bg-emerald-600 text-white text-[10px] font-black px-4 py-2 rounded-xl hover:bg-emerald-700 active:scale-95 transition-all arabic"
-                    >
-                      تنزيل وتثبيت تطبيق الأندرويد 📥
-                    </button>
-                  </div>
-                  <div className="w-11 h-11 bg-emerald-500/20 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0">
-                    <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M17.523 15.3414C17.0783 15.3414 16.7118 14.9749 16.7118 14.5302C16.7118 14.0855 17.0782 13.7226 17.523 13.7226C17.9678 13.7226 18.3343 14.0855 18.3343 14.5302C18.3343 14.9749 17.9642 15.3414 17.523 15.3414ZM6.47702 15.3414C6.03223 15.3414 5.66572 14.9749 5.66572 14.5302C5.66572 14.0855 6.03223 13.7226 6.47702 13.7226C6.9218 13.7226 7.28827 14.0855 7.28827 14.5302C7.28827 14.9749 6.91823 15.3414 6.47702 15.3414ZM17.9159 10.3705L19.7895 7.12602C19.9216 6.89745 19.843 6.60423 19.6144 6.47214C19.3858 6.34005 19.0926 6.41865 18.9605 6.64722L17.0564 9.94829C15.5898 9.28014 13.8966 8.90518 12.0018 8.90518C10.107 8.90518 8.41378 9.28014 6.94721 9.94829L5.04306 6.64722C4.91101 6.41865 4.61778 6.34005 4.38921 6.47214C4.16064 6.60423 4.08204 6.89745 4.21413 7.12602L6.08771 10.3705C3.0782 12.0673 1.01188 15.1114 0.697415 18.7772H23.3026C22.9881 15.1114 20.9218 12.0673 17.9159 10.3705Z"/>
-                    </svg>
-                  </div>
+              {/* Choice Hub: Web Ordering OR Downloading the App */}
+              <div className="bg-[#FAF7F0] rounded-[32px] border border-[#E9D9BD] p-5 space-y-4 shadow-sm">
+                <div className="text-right">
+                  <span className="text-[9px] font-black tracking-wider text-[#C5A059] bg-[#C5A059]/10 px-2.5 py-1 rounded-full arabic">طرق الطلب المريحة 👑</span>
+                  <h3 className="text-sm font-black text-ink arabic mt-2">كيف تفضل الطلب اليوم؟</h3>
+                  <p className="text-[10px] text-zinc-650 arabic mt-0.5">اختر بين الطلب الفوري المباشر عبر هذا الموقع، أو ثبّت تطبيق الهاتف لخصومات إضافية!</p>
                 </div>
-              )}
 
-              {(!useSimulator || deviceType === 'ios') && iosInstallStatus !== 'installed' && (
-                <div className="bg-blue-500/10 border border-blue-500/25 rounded-3xl p-5 flex items-center justify-between text-right gap-4">
-                  <div className="flex-1 space-y-1">
-                    <h4 className="text-blue-800 text-xs font-black arabic flex items-center gap-1.5 justify-end">
-                      تطبيق الآيفون متوفر على App Store 🍏
-                    </h4>
-                    <p className="text-neutral-600 text-[10px] arabic leading-relaxed">
-                      حمّل تطبيق المندي والمشوي لأجهزة iOS واستمتع بخصم 10% وتجربة سريعة للطلب بطنطا!
-                    </p>
-                    <button 
-                      onClick={() => { setDeviceType('ios'); setIsInstallModalOpen(true); }}
-                      className="mt-3 bg-blue-600 text-white text-[10px] font-black px-4 py-2 rounded-xl hover:bg-blue-700 active:scale-95 transition-all arabic"
-                    >
-                      تنزيل وتثبيت تطبيق الآيفون 📥
-                    </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  {/* Option A: Direct Web Ordering */}
+                  <div 
+                    onClick={() => setActiveTab('menu')}
+                    className="p-4 rounded-2xl bg-white border border-border/40 text-right flex flex-col justify-between hover:border-[#C5A059] hover:shadow-md active:scale-98 transition-all duration-200 cursor-pointer group"
+                  >
+                    <div className="flex justify-between items-start gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-xl bg-[#C5A059]/10 text-[#C5A059] flex items-center justify-center">
+                        <UtensilsCrossed size={15} />
+                      </div>
+                      <span className="text-[8px] font-black px-1.5 py-0.5 bg-neutral-100 text-[#C5A059] rounded-lg arabic">بدون تحميل ⚡</span>
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="font-extrabold text-xs text-ink arabic">الطلب المباشر من الموقع 🌐</h4>
+                      <p className="text-[9px] text-zinc-600 leading-relaxed arabic">
+                        تصفح منيو حضرموت الدمشقي كاملة، أضف وجبتك وسلتك فورياً بدون أي ملفات إضافية، وأرسل طلبك مباشرة لواتساب المطعم!
+                      </p>
+                    </div>
+                    <div className="mt-4 pt-2 border-t border-sand flex items-center justify-start text-[10px] font-black text-[#C5A059] arabic gap-1 group-hover:translate-x-[-2px] transition-transform">
+                      تصفح المنيو واطلب الآن <ChevronLeft size={12} />
+                    </div>
                   </div>
-                  <div className="w-11 h-11 bg-blue-500/20 text-blue-600 rounded-2xl flex items-center justify-center shrink-0">
-                    <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.07.08 2.21-.55 2.95-1.39"/>
-                    </svg>
+
+                  {/* Option B: Install Official App */}
+                  <div 
+                    onClick={() => {
+                      // Determine best default device setup or let modal choose
+                      setIsInstallModalOpen(true);
+                    }}
+                    className="p-4 rounded-2xl bg-gradient-to-tr from-zinc-900 to-black border border-neutral-800 text-right flex flex-col justify-between hover:shadow-lg active:scale-98 transition-all duration-200 cursor-pointer group text-white"
+                  >
+                    <div className="flex justify-between items-start gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-xl bg-accent text-ink flex items-center justify-center">
+                        <Smartphone size={15} />
+                      </div>
+                      <span className="text-[8px] font-black px-1.5 py-0.5 bg-[#C5A059] text-zinc-950 rounded-lg arabic animate-pulse">خصم %10 فوري 🎟️</span>
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="font-extrabold text-xs text-white arabic">تنزيل وتثبيت تطبيق الجوال 📱</h4>
+                      <p className="text-[9px] text-zinc-400 leading-relaxed arabic">
+                        ثبّت التطبيق الملكي (APK للأندرويد أو محاكي الـ iOS) لمتابعة خط سير المندوب بطنطا، وتنبيهات العروض الحية!
+                      </p>
+                    </div>
+                    <div className="mt-4 pt-2 border-t border-neutral-800 flex items-center justify-start text-[10px] font-black text-[#C5A059] arabic gap-1 group-hover:translate-x-[-2px] transition-transform">
+                      تحميل وتثبيت التطبيق <ChevronLeft size={12} />
+                    </div>
                   </div>
                 </div>
-              )}
+              </div>
 
               {/* Instant Search Bar */}
               <div className="relative">
@@ -481,6 +543,52 @@ ${cart.map(item => `📦 ${item.arabicName} ${item.selectedSize ? `«${sizeLabel
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* The Origin of Mandi and Grills Card */}
+              <div className="bg-gradient-to-tr from-[#FCF8F2] to-[#FFF] p-6 rounded-[32px] border border-[#E9D9BD] text-right space-y-4 shadow-sm relative overflow-hidden noble-border">
+                {/* Decorative background circle */}
+                <div className="absolute -top-12 -left-12 w-24 h-24 rounded-full bg-[#C5A059]/5 border border-[#C5A059]/10 pointer-events-none" />
+                
+                <div className="flex items-center gap-3 justify-end border-b border-[#E9D9BD]/50 pb-3">
+                  <div className="text-right">
+                    <h3 className="font-extrabold text-[#C5A059] text-xs arabic">سر الصنعة وتاريخ الملوك 👑</h3>
+                    <h2 className="font-black text-base text-ink arabic mt-0.5">أصل المندي والمشوي</h2>
+                  </div>
+                  <div className="w-10 h-10 bg-[#C5A059]/10 text-[#C5A059] rounded-2xl flex items-center justify-center shrink-0">
+                    <Sparkles size={18} />
+                  </div>
+                </div>
+
+                <div className="space-y-4 text-xs text-muted leading-relaxed font-semibold arabic">
+                  {/* Mandi Section */}
+                  <div className="space-y-1">
+                    <h4 className="font-black text-ink flex items-center gap-1.5 justify-end text-[13px]">
+                      <span className="text-[#C5A059]">✦</span> أصل المندي وعراقة حضرموت
+                    </h4>
+                    <p className="text-[11px] text-zinc-650 tracking-wide text-justify">
+                      وُلِد المندي في وديان <span className="text-[#C5A059] font-black">حضرموت</span> الذهبية باليمن السعيد. يُعَدُّ سيد الولائم التاريخية، حيث يعتمد على إنضاج اللحم ببطء شديد داخل حفرة التنور المطمورة تحت الأرض (الزرب). يُعلَّق اللحم فوق الجمر المشتعل من خشب السمر لتبخيره، ويتقطر دهنه الملكي فوق الأرز البسمتي الفاخر المُعطَّر بالهيل والمسمار والزعفران ليبقى طرياً وغنياً بالنكهة والنداوة التي تذوب بالفم.
+                    </p>
+                  </div>
+
+                  {/* Grilled Section */}
+                  <div className="space-y-1">
+                    <h4 className="font-black text-ink flex items-center gap-1.5 justify-end text-[13px]">
+                      <span className="text-[#C5A059]">✦</span> أصل المشوي واللمسة الدمشقية
+                    </h4>
+                    <p className="text-[11px] text-zinc-650 tracking-wide text-justify">
+                      بينما في الفيحاء، يكمن سر ملوك الخلطة والتتبيلة. تشتهر <span className="text-[#C5A059] font-black">دمشق</span> بأسرار نقع اللحوم بالخل البلدي، زيت الزيتون الصافي، دبس الرمان السوري المركز، والسبع بهارات الشامية الفواحة، وتُدخن بلطف على الفحم الهادئ حتى تنضج عصارتها الداخلية بامتياز وتحتفظ بطراوتها وبقشرة خارجية ذهبية مكرملة فريدة لا تُنسى.
+                    </p>
+                  </div>
+
+                  {/* Hadramout Damashqi Fusion */}
+                  <div className="bg-[#C5A059]/5 border border-[#C5A059]/10 rounded-2xl p-3.5 space-y-1">
+                    <h4 className="font-extrabold text-[#C5A059] text-[11px]">حضرموت الدمشقي بطنطا:</h4>
+                    <p className="text-[10px] text-zinc-700 font-bold leading-relaxed text-center">
+                      لقد جمعنا لكم أصالة المندي اليمني من جبال حضرموت، بمهارة وتحبيش التتبيلة السورية الشامية من دمشق، لنكتب لكم في <span className="font-black">طنطا</span> المعنى الحقيقي للجودة والكرم الملكي الفاخر. ✨
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -973,126 +1081,263 @@ ${cart.map(item => `📦 ${item.arabicName} ${item.selectedSize ? `«${sizeLabel
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 22, stiffness: 180 }}
-              className="absolute bottom-0 inset-x-0 bg-zinc-900 border-t border-zinc-800 rounded-t-[36px] p-6 text-right z-[110] pointer-events-auto shadow-2xl text-white space-y-6"
+              className="absolute bottom-0 inset-x-0 bg-zinc-900 border-t border-zinc-800 rounded-t-[36px] p-6 text-right z-[110] pointer-events-auto shadow-2xl text-white space-y-5"
             >
-              {deviceType === 'android' ? (
-                <>
-                  <div className="flex items-center gap-4 justify-end">
-                    <div className="text-right">
-                      <h3 className="text-sm font-black arabic leading-tight font-sans">أداة تثبيت حزم أندرويد</h3>
-                      <p className="text-[9px] text-emerald-400 font-bold arabic">تم فحصه بواسطة Play Protect ✓</p>
-                    </div>
-                    <div className="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center border border-zinc-700 font-bold text-accent">
-                      <UtensilsCrossed size={16} />
-                    </div>
+              {/* Installer Modal Header */}
+              <div className="flex justify-between items-center pb-2 border-b border-zinc-800">
+                <button 
+                  onClick={() => setIsInstallModalOpen(false)}
+                  className="text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-750 p-1.5 rounded-full transition-colors"
+                >
+                  <X size={16} />
+                </button>
+                <div className="flex items-center gap-2.5">
+                  <div className="text-right">
+                    <h3 className="text-xs font-black text-zinc-400 arabic uppercase tracking-wider">مركز تثبيت التطبيقات الملكية</h3>
+                    <h2 className="text-sm font-black text-white arabic">تطبيق حضرموت الدمشقي بطنطا</h2>
                   </div>
-
-                  <div className="bg-zinc-950/50 p-4 rounded-2xl space-y-3 border border-zinc-800 text-[11px]">
-                    <div className="flex justify-between items-center text-zinc-400">
-                      <span className="font-mono text-zinc-300">14.2 MB</span>
-                      <span className="arabic font-bold text-white">تفاصيل التطبيق:</span>
-                    </div>
-                    <div className="flex justify-between items-center text-zinc-400">
-                      <span className="font-mono text-zinc-300">v3.5.2 (Android APK)</span>
-                      <span className="arabic font-bold text-white">الإصدار والترخيص:</span>
-                    </div>
-                    <p className="text-[10px] text-zinc-400 arabic leading-relaxed text-right mt-1">
-                      يتطلب هذا التطبيق أندرويد 8.0+ ويأتي مبرمجاً لتسريع عمليات الطلب وتلقي إشعارات التوصيل الفورية بشارع البحر ومناطق طنطا.
-                    </p>
+                  <div className="w-10 h-10 bg-gradient-to-tr from-[#C5A059] to-[#E9D9BD] text-zinc-950 rounded-2xl flex items-center justify-center shrink-0 shadow-md">
+                    <Smartphone size={18} />
                   </div>
+                </div>
+              </div>
 
-                  {androidInstallStatus === 'installing' ? (
-                    <div className="space-y-3 py-2">
-                      <div className="flex justify-between items-center text-xs text-zinc-300">
-                        <span className="font-mono font-bold text-emerald-400">{installProgress}%</span>
-                        <span className="arabic font-bold">جاري تنزيل الفايل ومزامنة الملفات...</span>
+              {/* Installer Category Switch Tabs */}
+              <div className="flex bg-zinc-950 p-1 rounded-xl border border-zinc-850 max-w-md mx-auto w-full">
+                <button
+                  onClick={() => setInstallModalTab('real')}
+                  className={`flex-1 py-2 rounded-lg text-center text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    installModalTab === 'real'
+                      ? 'bg-blue-600 text-white font-black shadow-md'
+                      : 'text-zinc-500 hover:text-zinc-300'
+                  }`}
+                >
+                  <Smartphone size={12} className="shrink-0" />
+                  جوالك الحقيقي (تثبيت للزبائن) 📱
+                </button>
+                <button
+                  onClick={() => setInstallModalTab('test')}
+                  className={`flex-1 py-2 rounded-lg text-center text-[10px] font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    installModalTab === 'test'
+                      ? 'bg-[#C5A059] text-zinc-950 font-black shadow-md'
+                      : 'text-zinc-500 hover:text-zinc-300'
+                  }`}
+                >
+                  <Sparkles size={12} className="shrink-0" />
+                  محاكاة التثبيت (التجريب السريع) 🖥️
+                </button>
+              </div>
+
+              {installModalTab === 'test' ? (
+                /* Tab 1: Simulated Installer inside on-screen frame */
+                deviceType === 'android' ? (
+                  <>
+                    <div className="flex items-center gap-3 justify-end bg-emerald-950/20 border border-emerald-900/40 p-3 rounded-2xl">
+                      <div className="text-right">
+                        <h3 className="text-[11px] font-black arabic leading-tight">أداة تثبيت حزم أندرويد (محاكاة)</h3>
+                        <p className="text-[9px] text-emerald-400 font-bold arabic">تم الفحص وحماية البيانات ✓ Play Protect</p>
                       </div>
-                      <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
-                        <motion.div 
-                          className="h-full bg-gradient-to-r from-emerald-500 to-teal-400"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${installProgress}%` }}
-                          transition={{ duration: 0.1 }}
-                        />
+                      <div className="w-8 h-8 bg-zinc-800 rounded-xl flex items-center justify-center border border-zinc-700 font-bold text-[#C5A059] shrink-0">
+                        <UtensilsCrossed size={14} />
                       </div>
                     </div>
-                  ) : (
-                    <div className="flex gap-4">
-                      <button 
-                        onClick={() => setIsInstallModalOpen(false)}
-                        className="flex-1 bg-zinc-800 text-zinc-300 py-3 rounded-xl font-black text-xs hover:bg-zinc-750 transition-all arabic"
-                      >
-                        إلغاء للاحقاً
-                      </button>
-                      <button 
-                        onClick={startAndroidInstallation}
-                        className="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-black text-xs hover:bg-emerald-500 shadow-lg transition-all arabic"
-                      >
-                        تثبيت الآن (APK) 📲
-                      </button>
+
+                    <div className="bg-zinc-950/50 p-4 rounded-t-2xl rounded-b-lg space-y-2.5 border border-zinc-850 text-[10px] text-zinc-300">
+                      <div className="flex justify-between items-center border-b border-zinc-850/50 pb-1.5">
+                        <span className="font-mono text-zinc-400">14.2 MB</span>
+                        <span className="arabic font-extrabold text-[#C5A059]">حجم الملف:</span>
+                      </div>
+                      <div className="flex justify-between items-center border-b border-zinc-850/50 pb-1.5">
+                        <span className="font-mono text-zinc-400">v3.5.2 (Android APK)</span>
+                        <span className="arabic font-extrabold text-[#C5A059]">الترخيص والإصدار:</span>
+                      </div>
+                      <p className="text-[10px] text-zinc-400 arabic leading-relaxed text-right mt-1">
+                        سيقوم هذا الخيار <span className="text-white font-black">بتثبيت أيقونة التطبيق داخل جوال المحاكاة التجريبي على الشاشة جانبياً</span> لتتمكن فوراً من تصفح الواجهة، وإصدار الإشعارات الكاذبة لتجربة رحلة التوصيل بنجاح كامل!
+                      </p>
                     </div>
-                  )}
-                </>
+
+                    {androidInstallStatus === 'installing' ? (
+                      <div className="space-y-3 py-1">
+                        <div className="flex justify-between items-center text-xs text-zinc-300">
+                          <span className="font-mono font-bold text-emerald-400">{installProgress}%</span>
+                          <span className="arabic font-bold text-[11px]">جاري تنزيل ملف الـ APK وسحب الأيقونة...</span>
+                        </div>
+                        <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+                          <motion.div 
+                            className="h-full bg-gradient-to-r from-emerald-500 to-teal-400"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${installProgress}%` }}
+                            transition={{ duration: 0.1 }}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex gap-3">
+                        <button 
+                          onClick={() => setIsInstallModalOpen(false)}
+                          className="flex-1 bg-zinc-850 text-zinc-300 py-3 rounded-xl font-bold text-[11px] hover:bg-zinc-800 transition-all arabic"
+                        >
+                          إلغاء
+                        </button>
+                        <button 
+                          onClick={startAndroidInstallation}
+                          className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl font-black text-[11px] shadow-lg transition-all arabic"
+                        >
+                          تثبيت على الهاتف المحاكي (APK) 📲
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-3 justify-end bg-blue-950/20 border border-blue-900/40 p-3 rounded-2xl">
+                      <div className="text-right">
+                        <h3 className="text-[11px] font-black arabic leading-tight">تثبيت باقة Apple App Store (محاكاة)</h3>
+                        <p className="text-[9px] text-[#4285F4] font-bold arabic">تثبيت آمن تماماً عبر Face ID ✓</p>
+                      </div>
+                      <div className="w-8 h-8 bg-zinc-800 rounded-xl flex items-center justify-center border border-zinc-700 font-bold text-white shrink-0">
+                        <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.07.08 2.21-.55 2.95-1.39"/>
+                        </svg>
+                      </div>
+                    </div>
+
+                    <div className="bg-zinc-950/50 p-4 rounded-t-2xl rounded-b-lg space-y-2.5 border border-zinc-850 text-[10px] text-zinc-300">
+                      <div className="flex justify-between items-center border-b border-zinc-850/50 pb-1.5">
+                        <span className="font-mono text-emerald-400 font-bold">مـجـانــي</span>
+                        <span className="arabic font-extrabold text-[#C5A059]">رسوم التحميل:</span>
+                      </div>
+                      <div className="flex justify-between items-center border-b border-zinc-850/50 pb-1.5">
+                        <span className="font-mono text-zinc-400">Apple Silicon / iOS App</span>
+                        <span className="arabic font-extrabold text-[#C5A059]">توافقية النظام:</span>
+                      </div>
+                      <p className="text-[10px] text-zinc-400 arabic leading-relaxed text-right mt-1">
+                        سيقوم هذا الخيار <span className="text-white font-black">بتثبيت أيقونة التطبيق داخل آيفون المحاكاة التجريبي على الشاشة جانبياً</span> لتتمكن من تجربة أسرع للواجهة وإشعارات الأوردرات الملكية!
+                      </p>
+                    </div>
+
+                    {iosInstallStatus === 'installing' ? (
+                      <div className="space-y-3 py-1">
+                        <div className="flex justify-between items-center text-xs text-zinc-300">
+                          <span className="font-mono font-bold text-blue-400">{installProgress}%</span>
+                          <span className="arabic font-bold text-[11px]">جاري مطابقة الشهادات وبناء الأيقونة...</span>
+                        </div>
+                        <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+                          <motion.div 
+                            className="h-full bg-gradient-to-r from-blue-500 to-indigo-400"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${installProgress}%` }}
+                            transition={{ duration: 0.1 }}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex gap-3">
+                        <button 
+                          onClick={() => setIsInstallModalOpen(false)}
+                          className="flex-1 bg-zinc-850 text-zinc-300 py-3 rounded-xl font-bold text-[11px] hover:bg-zinc-800 transition-all arabic"
+                        >
+                          إلغاء للاحقاً
+                        </button>
+                        <button 
+                          onClick={startIosInstallation}
+                          className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-black text-[11px] shadow-lg transition-all arabic"
+                        >
+                          تثبيت على الآيفون المحاكي 🍏
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )
               ) : (
-                <>
-                  <div className="flex items-center gap-4 justify-end">
-                    <div className="text-right">
-                      <h3 className="text-sm font-black arabic leading-tight font-sans">تثبيت التطبيق من Apple App Store</h3>
-                      <p className="text-[9px] text-[#4285F4] font-bold arabic">تثبيت آمن عبر حساب Apple Secure ID ✓</p>
+                /* Tab 2: EXPLAINING EXACTLY WHY AND HOW TO INSTALL TO REAL PHONE! */
+                <div className="space-y-4 text-right">
+                  {isAppInstalled ? (
+                    <div className="bg-[#C5A059]/10 border border-[#C5A059]/30 p-5 rounded-2xl text-center space-y-3">
+                      <div className="w-12 h-12 bg-[#C5A059]/10 text-[#C5A059] rounded-full flex items-center justify-center mx-auto">
+                        <Check size={24} />
+                      </div>
+                      <h4 className="text-sm font-black text-white arabic">تهانينا! التطبيق يعمل بنسخته الأصلية ✨</h4>
+                      <p className="text-[10.5px] text-zinc-300 leading-relaxed arabic">
+                        رائع جداً! أنت تتصفح أو قمت بتثبيت تطبيق حضرموت الدمشقي بنجاح كبرنامج أصلي بالكامل ومستقل على جوالك. استمتع الآن بتجربة سريعة بدون شريط المتصفح وبشاشة كاملة!
+                      </p>
                     </div>
-                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-md text-zinc-950 font-bold shrink-0">
-                      <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.07.08 2.21-.55 2.95-1.39"/>
-                      </svg>
+                  ) : deferredPrompt ? (
+                    <div className="bg-emerald-950/20 border border-emerald-900/40 p-4 rounded-2xl space-y-3">
+                      <div className="flex items-center gap-3 justify-end">
+                        <div>
+                          <h4 className="text-xs font-black text-emerald-400 arabic">تم تجهيز التثبيت التلقائي بنجاح! 🚀</h4>
+                          <p className="text-[9px] text-zinc-400 arabic">متاح بنقرة واحدة من نظامك</p>
+                        </div>
+                        <div className="w-9 h-9 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center shrink-0">
+                          <Download size={16} />
+                        </div>
+                      </div>
+                      <p className="text-[10.5px] text-zinc-300 leading-relaxed arabic">
+                        جوالك يدعم التثبيت الفوري لبرنامج حضرموت الدمشقي الأصلي بطريقة ذكية خفيفة مدمجة. سيظهر كتطبيق على شاشتك بفتح مخصص وسريع.
+                      </p>
+                      <button
+                        onClick={triggerRealInstall}
+                        className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white py-3 rounded-xl font-black text-xs hover:scale-[1.01] active:scale-95 transition-all text-center arabic shadow-lg flex items-center justify-center gap-2"
+                      >
+                        <Download size={14} />
+                        تثبيت التطبيق الحقيقي فوراً على هاتفك 📲
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="bg-zinc-950 p-4 rounded-2xl border border-zinc-850 space-y-3.5">
+                      <span className="text-[9px] font-black bg-[#C5A059]/10 text-[#C5A059] px-2.5 py-1 rounded-full arabic inline-block">تكنولوجيا تطبيقات الويب المدمجة (PWA) ⚡</span>
+                      <h4 className="text-xs font-black text-white arabic">لماذا لا تحتاج للذهاب لجوجل بلاي أو الـ App Store؟</h4>
+                      <p className="text-[10.5px] text-zinc-400 leading-relaxed text-justify arabic">
+                        هذا التطبيق مبرمج كـ <span className="text-white font-bold">تطبيق ويب تقدمي (PWA)</span>. عند تثبيته، لن يكون مجرد اختصار، بل يتنزل على جهازك <span className="text-[#C5A059] font-black">كعنصر برمجى مستقل بالكامل</span> يعمل بواجهة خالية من المتصفح، مما يعطيك السرعة الفائقة والراحة الكاملة للطلب وتتبع توصيل طلبات طنطا!
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Manual Instructions as dynamic support based on status */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {/* iOS instruction */}
+                    <div className="bg-zinc-950/40 p-3.5 rounded-xl border border-zinc-800 space-y-2 text-right">
+                      <div className="flex items-center gap-2 justify-end">
+                        <span className="text-[9px] font-extrabold text-blue-400 font-sans">iPhone / iOS (Safari)</span>
+                        <span className="text-[12px]">🍏</span>
+                      </div>
+                      <ol className="text-[10px] text-zinc-300 space-y-1.5 arabic font-semibold list-decimal list-inside">
+                        <li>افتح هذا الرابط من متصفّح <span className="underline text-white font-bold">سفاري</span>.</li>
+                        <li>اضغط على زر **المشاركة (Share) 📤** بالأسفل.</li>
+                        <li>انزل قليلاً واختر **إضافة للشاشة الرئيسية ➕** (Add to Home Screen).</li>
+                        <li>سيثبت فوراً بجميع ملفاته وصلاحياته كتطبيق مستقل!</li>
+                      </ol>
+                    </div>
+
+                    {/* Android instruction */}
+                    <div className="bg-zinc-950/40 p-3.5 rounded-xl border border-zinc-800 space-y-2 text-right">
+                      <div className="flex items-center gap-2 justify-end">
+                        <span className="text-[9px] font-extrabold text-emerald-400 font-sans">Android (Chrome)</span>
+                        <span className="text-[12px]">🤖</span>
+                      </div>
+                      <ol className="text-[10px] text-zinc-300 space-y-1.5 arabic font-semibold list-decimal list-inside">
+                        <li>افتح الرابط من متصفح **جوجل كروم**.</li>
+                        <li>اضغط على **النقاط الثلاثة ⁝** أعلى اليسار.</li>
+                        <li>اختر خيار **تثبيت التطبيق 📥** (Install App) أو إضافة للشاشة.</li>
+                        <li>ستظهر لك أيقونة المطعم كبرنامج مدمج خفيف وسريع جداً مبروك!</li>
+                      </ol>
                     </div>
                   </div>
 
-                  <div className="bg-zinc-950/50 p-4 rounded-2xl space-y-3 border border-zinc-800 text-[11px]">
-                    <div className="flex justify-between items-center text-zinc-400">
-                      <span className="font-mono text-emerald-400 font-bold">مجاني (FREE)</span>
-                      <span className="arabic font-bold text-white">السعر والترخيص:</span>
-                    </div>
-                    <div className="flex justify-between items-center text-zinc-400">
-                      <span className="font-mono text-zinc-300">Apple Silicon / iOS App</span>
-                      <span className="arabic font-bold text-white">التوافق:</span>
-                    </div>
-                    <p className="text-[10px] text-zinc-400 arabic leading-relaxed text-right mt-1">
-                      يدعم تطبيق طنطا للآيفون ميزة Live Activities لتتبع دقيق لمرور المندوب بشارع البحر والاستاد لحظة بلحظة.
+                  <div className="bg-zinc-950 border border-zinc-850 p-2.5 rounded-xl text-center">
+                    <p className="text-[10px] text-[#C5A059] font-black arabic">
+                      💡 جرب خيار "محاكاة التثبيت" المكتوب أعلاه لمشاهدة كيف ستبدو أيقونة التطبيق الحقيقية على هاتف المحاكي!
                     </p>
                   </div>
 
-                  {iosInstallStatus === 'installing' ? (
-                    <div className="space-y-3 py-2">
-                      <div className="flex justify-between items-center text-xs text-zinc-300">
-                        <span className="font-mono font-bold text-blue-400">{installProgress}%</span>
-                        <span className="arabic font-bold">جاري فحص Face ID وتحميل تطبيق iOS...</span>
-                      </div>
-                      <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
-                        <motion.div 
-                          className="h-full bg-gradient-to-r from-blue-500 to-indigo-400"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${installProgress}%` }}
-                          transition={{ duration: 0.1 }}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex gap-4">
-                      <button 
-                        onClick={() => setIsInstallModalOpen(false)}
-                        className="flex-1 bg-zinc-800 text-zinc-300 py-3 rounded-xl font-black text-xs hover:bg-zinc-750 transition-all arabic"
-                      >
-                        إلغاء للاحقاً
-                      </button>
-                      <button 
-                        onClick={startIosInstallation}
-                        className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-black text-xs hover:bg-blue-500 shadow-lg transition-all arabic"
-                      >
-                        تثبيت عبر App Store 🍏
-                      </button>
-                    </div>
-                  )}
-                </>
+                  <button 
+                    onClick={() => setIsInstallModalOpen(false)}
+                    className="w-full bg-[#C5A059] text-zinc-950 py-3 rounded-xl font-black text-xs hover:bg-[#b08b47] transition-all text-center arabic"
+                  >
+                    فهمت، شكراً جزيلاً! 👍
+                  </button>
+                </div>
               )}
             </motion.div>
           </>

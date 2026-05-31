@@ -10,6 +10,14 @@
     <meta name="author" content="حضرموت الدمشقي" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23C5A059' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8'%3E%3C/path%3E%3Cpath d='M15 22v-4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4'%3E%3C/path%3E%3Cpath d='M18 11l-3 3'%3E%3C/path%3E%3Cpath d='M12 2v8'%3E%3C/path%3E%3Cpath d='M7 2v5'%3E%3C/path%3E%3Cpath d='m2 8 8 5'%3E%3C/path%3E%3Cpath d='m20 22-5-5'%3E%3C/path%3E%3Ccircle cx='6' cy='18' r='3'%3E%3C/circle%3E%3C/svg%3E">
 
+    <!-- Progressive Web App (PWA) Meta & Links -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#C5A059" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="حضرموت الدمشقي" />
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/192/kabob.png" />
+
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="حضرموت الدمشقي - أصل المندي والمشوي" />
@@ -38,6 +46,15 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('PWA Service Worker successfully registered!', reg))
+            .catch(err => console.error('PWA Service Worker failed to register: ', err));
+        });
+      }
+    </script>
   </body>
 </html>
 
