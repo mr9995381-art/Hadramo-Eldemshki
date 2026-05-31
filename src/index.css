@@ -6,19 +6,19 @@
   --font-arabic: 'Cairo', sans-serif;
   --font-serif: 'Cormorant Garamond', serif;
 
-  --color-primary: #8E1C1C;       /* Deep Yemenite Red */
-  --color-primary-dark: #5A1111;
-  --color-accent: #D4AF37;        /* Golden Accent */
-  --color-accent-dark: #B4942F;
-  --color-sand: #FAF9F6;          /* Warm Cream Paper */
-  --color-border: #E8E2D9;
-  --color-ink: #1C1C1C;           /* Crisp Black */
-  --color-muted: #8E8E8E;
+  --color-primary: #121212;       /* Deep Charcoal */
+  --color-primary-dark: #080808;
+  --color-accent: #C5A059;        /* Sophisticated Gold */
+  --color-accent-dark: #A6803D;
+  --color-sand: #FBFBFB;          /* Ivory / Paper */
+  --color-border: #E5E5E5;
+  --color-ink: #121212;           /* Deep Black */
+  --color-muted: #737373;
 }
 
 @layer base {
   body {
-    @apply bg-sand text-ink antialiased selection:bg-primary/10 selection:text-primary;
+    @apply bg-sand text-ink antialiased selection:bg-accent/10 selection:text-accent;
     font-family: var(--font-sans);
   }
 }
@@ -33,22 +33,22 @@
   }
 
   .bento-card {
-    @apply bg-white border border-border rounded-[32px] transition-all duration-500;
-    box-shadow: 0 4px 32px -12px rgba(0, 0, 0, 0.05);
+    @apply bg-white border border-border/60 rounded-[40px] transition-all duration-700;
+    box-shadow: 0 4px 40px -16px rgba(0, 0, 0, 0.03);
   }
 
   .bento-card:hover {
-    @apply border-primary/20 -translate-y-1.5;
-    box-shadow: 0 32px 64px -16px rgba(142, 28, 28, 0.12);
+    @apply border-accent/30 -translate-y-2;
+    box-shadow: 0 40px 80px -20px rgba(197, 160, 89, 0.12);
   }
 
   .glass {
-    @apply bg-white/90 backdrop-blur-md border-b border-border shadow-sm;
+    @apply bg-white/70 backdrop-blur-xl border-b border-white/20 shadow-[0_1px_20px_-10px_rgba(0,0,0,0.05)];
   }
 
   .heading-tight {
-    line-height: 0.95;
-    letter-spacing: -0.02em;
+    line-height: 0.85;
+    letter-spacing: -0.04em;
   }
 
   .text-luxury {
@@ -58,8 +58,17 @@
   }
 
   .dots-pattern {
-    background-image: radial-gradient(var(--color-border) 1px, transparent 1px);
-    background-size: 24px 24px;
+    background-image: radial-gradient(rgba(0,0,0,0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  
+  .noble-border {
+    @apply border border-accent/20 relative;
+  }
+  
+  .noble-border::after {
+    content: '';
+    @apply absolute inset-[2px] border border-accent/10 pointer-events-none rounded-[inherit];
   }
 }
 
